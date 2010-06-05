@@ -15,17 +15,22 @@ def login(request, user):
     """
     if user is None:
         user = request.user
-
+        
+    #print 'session ', dict(request.session)
+    #print 'user.id ', user.id
     if SESSION_KEY in request.session:
         if request.session[SESSION_KEY] != user.id:
             # To avoid reusing another user's session, create a new, empty
             # session if the existing session corresponds to a different
             # authenticated user.
             request.session.flush()
+            #print 'Flushssssession...'
     else:
         request.session.cycle_key()
     request.session[SESSION_KEY] = user.id
     request.session[BACKEND_SESSION_KEY] = user.backend
+    #print 'session: ', dict(request.session)
+    #print 'hasattr: ', hasattr(request, 'user')
     if hasattr(request, 'user'):
         request.user = user
 

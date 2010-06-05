@@ -1,35 +1,23 @@
+import urllib
 import datetime
 from oauth import oauth
 from django.db import models
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
 from twitterauth.twitter import TwitterAPI
+from django.utils import simplejson
 
 
 class User(models.Model):
-
-    SEX_MALE = 0
-    SEX_FEMALE = 1
-    SEX_CHOICES = (
-        (SEX_MALE, _('Male')),
-        (SEX_FEMALE, _('Female')),
-    )
-
     username = models.CharField(max_length=40)
-    email = models.EmailField()
+    thumbnail = models.CharField(max_length=200, null=True, blank=True)
+    name = models.CharField(max_length=100, null=True, blank=True)
 
     last_login = models.DateTimeField(_('last login'), default=datetime.datetime.now)
     date_joined = models.DateTimeField(_('date joined'), default=datetime.datetime.now)
 
     key = models.CharField(max_length=200)
     secret = models.CharField(max_length=200)
-
-    sex = models.SmallIntegerField(choices=SEX_CHOICES, default=0)
-    weight = models.SmallIntegerField(default=160)
-
-    @property
-    def bac(self):
-        return bac.bac(self.empties.all(), self.weight, self.sex)
 
     def __unicode__(self):
         return self.username
@@ -38,7 +26,7 @@ class User(models.Model):
     @property
     def twitter_api(self):
         if self._twitter_api is None:
-            self._twitter_api = TwitterAPI(self)
+            self._twitter_api = TwitterAPI()
         return self._twitter_api
 
     def get_absolute_url(self):
@@ -65,12 +53,12 @@ class User(models.Model):
         return bool(self.twitter_api.verify_credentials())
 
     def tweet(self, status):
-        return api(
+        return simplejson.loads(self.twitter_api.make_request(
             'https://twitter.com/statuses/update.json',
             self.token(),
             http_method='POST',
             status=status
-        )
+        ))
 
 
 class AnonymousUser(object):
@@ -83,7 +71,7 @@ class AnonymousUser(object):
         return 'AnonymousUser'
 
     def to_string(self, only_key=False):
-        raise NotImplementedError
+        raise NotImplemented
 
     _twitter_api = None
     @property
@@ -102,13 +90,13 @@ class AnonymousUser(object):
         return 1 # instances always return the same hash value
 
     def save(self):
-        raise NotImplementedError
+        raise NotImplemented
 
     def delete(self):
-        raise NotImplementedError
+        raise NotImplemented
 
     def tweet(self, status):
-        raise NotImpelementedError
+        raise NotImplemented
 
     def is_anonymous(self):
         return True

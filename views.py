@@ -30,13 +30,13 @@ def login(request, redirect_field_name=REDIRECT_FIELD_NAME):
     if not redirect_to or '//' in redirect_to or ' ' in redirect_to:
         redirect_to = settings.LOGIN_REDIRECT_URL
     request_token = request.user.twitter_api.get_request_token()
-    print 'Token', request_token
+    #print 'Token', request_token
     request.session.set_test_cookie()
     request.session[SESSION_TOKEN_KEY] = request_token.to_string()
     request.session[SESSION_LOGIN_REDIRECT_KEY] = redirect_to
     
     authorization_url = request.user.twitter_api.get_authorization_url(request_token)
-    print 'Authorization url', authorization_url
+    #print 'Authorization url', authorization_url
     return HttpResponseRedirect(authorization_url)
 
 
@@ -66,10 +66,18 @@ def callback(request):
                    user.secret != request.user.twitter_api.token.secret):
         user.key = request.user.twitter_api.token.key
         user.secret = request.user.twitter_api.token.secret
-        user.save()
+        
+    user.thumbnail = credentials['profile_image_url']
+    user.name = credentials['name']
+    user.save()
+    
     # Call authenticate to verify and add backend to the user object.
     user = authenticate(key=user.key, secret=user.secret)
+    #print 'vamos'
+    #print 'Aqui', user
     login(request, user)
+    #print 'request.user: ', request.user
+    #print '...................'
     if request.session.test_cookie_worked():
         request.session.delete_test_cookie()
     del request.session[SESSION_TOKEN_KEY]

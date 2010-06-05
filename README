@@ -27,6 +27,11 @@ INSTALLATION
 
 		TWITTERAUTH_KEY = 'OH HAI'
 		TWITTERAUTH_SECRET = 'OH NOES'
+		
+	And will need to add also into settings.py the django backends 
+	configuration:
+	
+		AUTHENTICATION_BACKENDS = ('twitterauth.backends.TwitterBackend',)
 
 	Setup the URLs for the auth app.  The names of the URLs are required.
 	For example:

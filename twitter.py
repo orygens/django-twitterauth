@@ -34,6 +34,7 @@ class TwitterAPI(object):
             token = self.token
         if parameters is None:
             parameters = {}
+            
         request = oauth.OAuthRequest.from_consumer_and_token(self.consumer, token=token, 
                      http_url=url, parameters=parameters, http_method=method)
         request.sign_request(self.signature_method, self.consumer, token)
@@ -42,7 +43,6 @@ class TwitterAPI(object):
     def _make_request(self, request):
         self.connection.request(request.http_method, request.to_url())
         result = self.connection.getresponse().read()
-        print 'RESULT:', result
         return result
 
     def get_request_token(self):
