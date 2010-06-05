@@ -48,6 +48,9 @@ class User(models.Model):
 
     def is_authorized(self): 
         return True
+    
+    def is_active(self):
+        return True
 
     def is_twauthorized(self):
         return bool(self.twitter_api.verify_credentials())
@@ -55,9 +58,8 @@ class User(models.Model):
     def tweet(self, status):
         return simplejson.loads(self.twitter_api.make_request(
             'https://twitter.com/statuses/update.json',
-            self.token(),
             http_method='POST',
-            status=status
+            parameters=dict(status=status)
         ))
 
 
@@ -106,3 +108,6 @@ class AnonymousUser(object):
 
     def is_twauthorized(self):
         return False
+    
+    def is_active(self):
+        return True
