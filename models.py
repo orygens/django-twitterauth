@@ -26,13 +26,13 @@ class User(models.Model):
     @property
     def twitter_api(self):
         if self._twitter_api is None:
-            self._twitter_api = TwitterAPI()
+            self._twitter_api = TwitterAPI(oauth.OAuthToken.from_string(self.token()))
         return self._twitter_api
 
     def get_absolute_url(self):
         return reverse('user', kwargs={'id': self.id})
 
-    def to_string(self, only_key=False):
+    def token(self, only_key=False):
         # so this can be used in place of an oauth.OAuthToken
         if only_key:
             return urllib.urlencode({'oauth_token': self.key})
@@ -51,16 +51,20 @@ class User(models.Model):
     
     def is_active(self):
         return True
+    
+    def is_staff(self):
+        return False
 
     def is_twauthorized(self):
         return bool(self.twitter_api.verify_credentials())
 
     def tweet(self, status):
-        return simplejson.loads(self.twitter_api.make_request(
+        json = simplejson.loads(self.twitter_api.make_request(
             'https://twitter.com/statuses/update.json',
-            http_method='POST',
+            method='POST',
             parameters=dict(status=status)
         ))
+        return json
 
 
 class AnonymousUser(object):
@@ -111,3 +115,6 @@ class AnonymousUser(object):
     
     def is_active(self):
         return True
+    
+    def is_staff(self):
+        return False

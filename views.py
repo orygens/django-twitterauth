@@ -66,7 +66,6 @@ def callback(request):
                    user.secret != request.user.twitter_api.token.secret):
         user.key = request.user.twitter_api.token.key
         user.secret = request.user.twitter_api.token.secret
-        
     user.thumbnail = credentials['profile_image_url']
     user.name = credentials['name']
     user.save()
