@@ -59,12 +59,14 @@ class User(models.Model):
         return bool(self.twitter_api.verify_credentials())
 
     def tweet(self, status):
-        json = simplejson.loads(self.twitter_api.make_request(
-            'https://twitter.com/statuses/update.json',
-            method='POST',
-            parameters=dict(status=status)
-        ))
-        return json
+        return simplejson.loads(
+            self.twitter_api.tweet(status)
+        )
+    
+    def friends(self):
+        return simplejson.loads(
+            self.twitter_api.friends(self.username)
+        )
 
 
 class AnonymousUser(object):

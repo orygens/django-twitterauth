@@ -15,6 +15,15 @@ TWITTER_AUTHORIZE_URL = 'https://twitter.com/oauth/authorize'
 TWITTER_ACCESS_TOKEN_URL = 'https://twitter.com/oauth/access_token'
 TWITTER_VERIFY_CREDENTIALS_URL = 'https://twitter.com/account/verify_credentials.json'
 
+# Timeline Methods
+TWITTER_PUBLIC_TIMELINE = "https://twitter.com/statuses/public_timeline.json"
+TWITTER_FRIENDS_TIMELINE = "https://twitter.com/statuses/friends_timeline.json"
+# Status Methods
+TWITTER_UPDATE_STATUS = 'https://twitter.com/statuses/update.json'
+# User Methods
+TWITTER_FRIENDS = 'https://twitter.com/statuses/friends.json'
+TWITTER_FOLLOWERS = 'https://twitter.com/statuses/followers.json'
+
 
 class TwitterAPI(object):
     def __init__(self, token=None):
@@ -65,3 +74,18 @@ class TwitterAPI(object):
 
     def verify_credentials(self):
         return json.loads(self.make_request(TWITTER_VERIFY_CREDENTIALS_URL))
+    
+    def tweet(self, status):
+        return self.make_request(
+            TWITTER_UPDATE_STATUS,
+            method='POST',
+            parameters=dict(status=status)
+        )
+        
+    def friends(self, screen_name):
+        return self.make_request(
+            TWITTER_FRIENDS,
+            parameters=dict(screen_name=screen_name)
+        )
+        
+    
