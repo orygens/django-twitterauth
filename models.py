@@ -67,6 +67,11 @@ class User(models.Model):
         return simplejson.loads(
             self.twitter_api.friends(self.username)
         )
+        
+    def get_user(self, id_or_screen_name):
+        return simplejson.loads(
+            self.twitter_api.get_user(id_or_screen_name)
+        )
 
 
 class AnonymousUser(object):

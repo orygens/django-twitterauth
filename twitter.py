@@ -1,4 +1,6 @@
 import httplib
+import exceptions
+
 from django.conf import settings
 from django.utils import simplejson as json
 from django.core.exceptions import ImproperlyConfigured
@@ -23,6 +25,17 @@ TWITTER_UPDATE_STATUS = 'https://twitter.com/statuses/update.json'
 # User Methods
 TWITTER_FRIENDS = 'https://twitter.com/statuses/friends.json'
 TWITTER_FOLLOWERS = 'https://twitter.com/statuses/followers.json'
+
+TWITTER_SHOW_USER = 'http://api.twitter.com/1/users/show.json'
+
+class TwitterException(exceptions.Exception):
+    """If a call to Twitter's RESTful API returns anything other than "200 OK,"
+    raise this exception to pass the HTTP status and payload to the caller."""
+    def __init__(self, status, reason, payload):
+        self.args = (status, reason, payload)
+        self.status = status
+        self.reason = reason
+        self.payload = payload
 
 
 class TwitterAPI(object):
@@ -51,7 +64,10 @@ class TwitterAPI(object):
 
     def _make_request(self, request):
         self.connection.request(request.http_method, request.to_url())
-        result = self.connection.getresponse().read()
+        response = self.connection.getresponse()
+        result = response.read()
+        if response.status != 200:
+            raise TwitterException(response.status, response.reason, result)
         return result
 
     def get_request_token(self):
@@ -86,6 +102,12 @@ class TwitterAPI(object):
         return self.make_request(
             TWITTER_FRIENDS,
             parameters=dict(screen_name=screen_name)
+        )
+        
+    def get_user(self, id_or_screen_name):
+        return self.make_request(
+            TWITTER_SHOW_USER,
+            parameters=dict(id=id_or_screen_name)
         )
         
     
