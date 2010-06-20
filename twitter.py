@@ -1,4 +1,5 @@
 import httplib
+import urllib
 import exceptions
 
 from django.conf import settings
@@ -20,8 +21,10 @@ TWITTER_VERIFY_CREDENTIALS_URL = 'https://twitter.com/account/verify_credentials
 # Timeline Methods
 TWITTER_PUBLIC_TIMELINE = "https://twitter.com/statuses/public_timeline.json"
 TWITTER_FRIENDS_TIMELINE = "https://twitter.com/statuses/friends_timeline.json"
+TWITTER_USER_TIMELINE = "http://api.twitter.com/1/statuses/user_timeline.json"
 # Status Methods
 TWITTER_UPDATE_STATUS = 'https://twitter.com/statuses/update.json'
+TWITTER_RETWEET_STATUS = 'http://api.twitter.com/1/statuses/retweet/%s.json'
 # User Methods
 TWITTER_FRIENDS = 'https://twitter.com/statuses/friends.json'
 TWITTER_FOLLOWERS = 'https://twitter.com/statuses/followers.json'
@@ -50,8 +53,14 @@ class TwitterAPI(object):
         if not self.conn:
             self.conn = httplib.HTTPSConnection('twitter.com')
         return self.conn
+    
+    @property
+    def normal_connection(self):
+        if not self.conn:
+            self.conn = httplib.HTTPConnection('twitter.com')
+        return self.conn
 
-    def make_request(self, url, parameters=None, method='GET', token=None):
+    def make_request(self, url, parameters=None, method='GET', token=None, connection=None):
         if token is None:
             token = self.token
         if parameters is None:
@@ -60,10 +69,10 @@ class TwitterAPI(object):
         request = oauth.OAuthRequest.from_consumer_and_token(self.consumer, token=token, 
                      http_url=url, parameters=parameters, http_method=method)
         request.sign_request(self.signature_method, self.consumer, token)
-        return self._make_request(request)
+        return self._make_request(connection or self.connection, request.http_method, request.to_url())
 
-    def _make_request(self, request):
-        self.connection.request(request.http_method, request.to_url())
+    def _make_request(self, connection, http_method, request):
+        connection.request(http_method, request)
         response = self.connection.getresponse()
         result = response.read()
         if response.status != 200:
@@ -74,7 +83,7 @@ class TwitterAPI(object):
         request = oauth.OAuthRequest.from_consumer_and_token(self.consumer, 
                                                              http_url=TWITTER_REQUEST_TOKEN_URL)
         request.sign_request(self.signature_method, self.consumer, None)
-        return oauth.OAuthToken.from_string(self._make_request(request))
+        return oauth.OAuthToken.from_string(self._make_request(self.connection, request.http_method, request.to_url()))
 
     def get_authorization_url(self, request_token):
         request = oauth.OAuthRequest.from_consumer_and_token(self.consumer, token=request_token,
@@ -86,7 +95,7 @@ class TwitterAPI(object):
         request = oauth.OAuthRequest.from_consumer_and_token(self.consumer, token=request_token,
                                                              http_url=TWITTER_ACCESS_TOKEN_URL)
         request.sign_request(self.signature_method, self.consumer, request_token)
-        return oauth.OAuthToken.from_string(self._make_request(request))
+        return oauth.OAuthToken.from_string(self._make_request(self.connection, request.http_method, request.to_url()))
 
     def verify_credentials(self):
         return json.loads(self.make_request(TWITTER_VERIFY_CREDENTIALS_URL))
@@ -96,6 +105,12 @@ class TwitterAPI(object):
             TWITTER_UPDATE_STATUS,
             method='POST',
             parameters=dict(status=status)
+        )
+    
+    def retweet(self, id):
+        return self.make_request(
+            TWITTER_RETWEET_STATUS % id,
+            method='POST',
         )
         
     def friends(self, screen_name):
@@ -109,5 +124,15 @@ class TwitterAPI(object):
             TWITTER_SHOW_USER,
             parameters=dict(id=id_or_screen_name)
         )
+        
+    def get_user_timeline(self, id_or_screen_name, count=10, since_id=""):
+        return self.make_request(
+            TWITTER_USER_TIMELINE,
+            parameters=dict(id=id_or_screen_name, 
+                            count=count, 
+                            since_id=since_id or ""),
+            connection=self.normal_connection
+        )
+            
         
     

@@ -12,6 +12,7 @@ class User(models.Model):
     username = models.CharField(max_length=40)
     thumbnail = models.CharField(max_length=200, null=True, blank=True)
     name = models.CharField(max_length=100, null=True, blank=True)
+    is_staff = models.BooleanField(default=False)
 
     last_login = models.DateTimeField(_('last login'), default=datetime.datetime.now)
     date_joined = models.DateTimeField(_('date joined'), default=datetime.datetime.now)
@@ -53,14 +54,25 @@ class User(models.Model):
         return True
     
     def is_staff(self):
-        return False
-
+        return self.is_staff
+    
+    def has_module_perms(self, *args, **kwargs):
+        return True
+        
+    def has_perm(self, *args, **kwargs):
+        return True
+    
     def is_twauthorized(self):
         return bool(self.twitter_api.verify_credentials())
 
     def tweet(self, status):
         return simplejson.loads(
             self.twitter_api.tweet(status)
+        )
+        
+    def retweet(self, id):
+        return simplejson.loads(
+            self.twitter_api.retweet(id)
         )
     
     def friends(self):
@@ -72,7 +84,12 @@ class User(models.Model):
         return simplejson.loads(
             self.twitter_api.get_user(id_or_screen_name)
         )
-
+        
+    def get_user_timeline(self, id_or_screen_name, count=10, since_id=None):
+        return simplejson.loads(
+            self.twitter_api.get_user_timeline(id_or_screen_name or self.username, 
+                                        count=count, since_id=since_id)
+        )
 
 class AnonymousUser(object):
     username = ''
