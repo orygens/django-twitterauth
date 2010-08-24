@@ -1,3 +1,5 @@
+# -*- charset: utf8 -*-
+
 import httplib
 import urllib
 import exceptions
@@ -85,17 +87,17 @@ class TwitterAPI(object):
         request.sign_request(self.signature_method, self.consumer, None)
         return oauth.OAuthToken.from_string(self._make_request(self.connection, request.http_method, request.to_url()))
 
+    def get_access_token(self, request_token=None):
+        request = oauth.OAuthRequest.from_consumer_and_token(self.consumer, token=request_token,
+                                                             http_url=TWITTER_ACCESS_TOKEN_URL)
+        request.sign_request(self.signature_method, self.consumer, request_token)
+        return oauth.OAuthToken.from_string(self._make_request(self.connection, request.http_method, request.to_url()))
+
     def get_authorization_url(self, request_token):
         request = oauth.OAuthRequest.from_consumer_and_token(self.consumer, token=request_token,
                                                              http_url=TWITTER_AUTHORIZE_URL)
         request.sign_request(self.signature_method, self.consumer, request_token)
         return request.to_url()
-
-    def get_access_token(self, request_token):
-        request = oauth.OAuthRequest.from_consumer_and_token(self.consumer, token=request_token,
-                                                             http_url=TWITTER_ACCESS_TOKEN_URL)
-        request.sign_request(self.signature_method, self.consumer, request_token)
-        return oauth.OAuthToken.from_string(self._make_request(self.connection, request.http_method, request.to_url()))
 
     def verify_credentials(self):
         return json.loads(self.make_request(TWITTER_VERIFY_CREDENTIALS_URL))

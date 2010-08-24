@@ -1,3 +1,5 @@
+# -*- charset: utf8 -*-
+
 class LazyUser(object):
     def __get__(self, request, obj_type=None):
         if not hasattr(request, '_cached_user'):

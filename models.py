@@ -1,3 +1,5 @@
+# -*- charset: utf8 -*-
+
 import urllib
 import datetime
 from oauth import oauth

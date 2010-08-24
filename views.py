@@ -1,3 +1,5 @@
+# -*- charset: utf8 -*-
+
 from django.shortcuts import render_to_response
 from django.http import HttpResponseRedirect, HttpResponseServerError
 from django.core.urlresolvers import reverse

@@ -1,3 +1,5 @@
+# -*- charset: utf8 -*-
+
 from models import User
 
 class TwitterBackend(object):

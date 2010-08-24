@@ -1,3 +1,5 @@
+# -*- charset: utf8 -*-
+
 try:
     from functools import update_wrapper
 except ImportError:
