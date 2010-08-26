@@ -20,18 +20,18 @@ TWITTER_VERIFY_CREDENTIALS_URL = 'https://api.twitter.com/account/verify_credent
 # Timeline Methods
 TWITTER_PUBLIC_TIMELINE = "https://api.twitter.com/statuses/public_timeline.json"
 TWITTER_FRIENDS_TIMELINE = "https://api.twitter.com/statuses/friends_timeline.json"
-TWITTER_FRIENDS_IDS = "http://api.twitter.com/1/friends/ids.json"
-TWITTER_FRINEDS_LOOKUP = "http://api.twitter.com/1/users/lookup.json"
-TWITTER_USER_TIMELINE = "http://api.twitter.com/1/statuses/user_timeline.json"
+TWITTER_FRIENDS_IDS = "https://api.twitter.com/1/friends/ids.json"
+TWITTER_FRINEDS_LOOKUP = "https://api.twitter.com/1/users/lookup.json"
+TWITTER_USER_TIMELINE = "https://api.twitter.com/1/statuses/user_timeline.json"
 # Status Methods
 TWITTER_UPDATE_STATUS = 'https://api.twitter.com/statuses/update.json'
-TWITTER_RETWEET_STATUS = 'http://api.twitter.com/1/statuses/retweet/%s.json'
-TWITTER_UNFOLLOW = "http://api.twitter.com/1/friendships/destroy.json"
+TWITTER_RETWEET_STATUS = 'https://api.twitter.com/1/statuses/retweet/%s.json'
+TWITTER_UNFOLLOW = "https://api.twitter.com/1/friendships/destroy.json"
 # User Methods
 TWITTER_FRIENDS = 'https://api.twitter.com/statuses/friends.json'
 TWITTER_FOLLOWERS = 'https://api.twitter.com/statuses/followers.json'
 
-TWITTER_SHOW_USER = 'http://api.twitter.com/1/users/show.json'
+TWITTER_SHOW_USER = 'https://api.twitter.com/1/users/show.json'
 
 class TwitterException(exceptions.Exception):
     """If a call to Twitter's RESTful API returns anything other than "200 OK,"
@@ -47,14 +47,15 @@ class TwitterAPI(object):
     def __init__(self, token=None):
         self.consumer = oauth.OAuthConsumer(settings.TWITTERAUTH_KEY, settings.TWITTERAUTH_SECRET)
         self.conn = None
+        self.conn1 = None
         self.signature_method = oauth.OAuthSignatureMethod_HMAC_SHA1()
         self.token = token
 
     @property
     def connection(self):
-        if not self.conn:
-            self.conn = httplib.HTTPSConnection('twitter.com')
-        return self.conn
+        if not self.conn1:
+            self.conn1 = httplib.HTTPSConnection('twitter.com')
+        return self.conn1
     
     @property
     def normal_connection(self):

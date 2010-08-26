@@ -1,4 +1,4 @@
-# -*- charset: utf8 -*-
+#-*- coding:utf-8 -*-
 
 import oauth
 
@@ -92,6 +92,7 @@ def callback(request):
         user.secret = request.user.twitter_api.token.secret
     user.thumbnail = credentials['profile_image_url']
     user.name = credentials['name']
+    user.followers_count = credentials['followers_count']
     user.save()
     
     # Call authenticate to verify and add backend to the user object.

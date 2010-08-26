@@ -1,4 +1,4 @@
-# -*- charset: utf8 -*-
+#-*- coding:utf-8 -*-
 
 import urllib
 import datetime
@@ -13,6 +13,7 @@ from django.utils import simplejson
 class User(models.Model):
     username = models.CharField(max_length=40)
     thumbnail = models.CharField(max_length=200, null=True, blank=True)
+    followers_count = models.IntegerField(default=0, blank=True)
     name = models.CharField(max_length=100, null=True, blank=True)
     is_staff = models.BooleanField(default=False)
 
