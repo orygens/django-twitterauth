@@ -1,17 +1,20 @@
 # -*- charset: utf8 -*-
 
+import oauth
+
 from django.shortcuts import render_to_response
 from django.http import HttpResponseRedirect, HttpResponseServerError
+from django.template import RequestContext
 from django.core.urlresolvers import reverse
 from django.conf import settings
-from oauth import oauth
 from models import User
+from forms import PinCodeForm
 from decorators import login_required
 from twitterauth import REDIRECT_FIELD_NAME
 
 
 SESSION_LOGIN_REDIRECT_KEY = '_login_redirect_key'
-SESSION_TOKEN_KEY = '_token'
+SESSION_TOKEN_KEY = 'oauth_token'
 
 
 @login_required
@@ -31,15 +34,24 @@ def login(request, redirect_field_name=REDIRECT_FIELD_NAME):
     redirect_to = request.REQUEST.get(redirect_field_name, '')
     if not redirect_to or '//' in redirect_to or ' ' in redirect_to:
         redirect_to = settings.LOGIN_REDIRECT_URL
-    request_token = request.user.twitter_api.get_request_token()
-    #print 'Token', request_token
-    request.session.set_test_cookie()
-    request.session[SESSION_TOKEN_KEY] = request_token.to_string()
-    request.session[SESSION_LOGIN_REDIRECT_KEY] = redirect_to
     
+    request.session.set_test_cookie()
+    
+    if not settings.DEBUG:
+        request_token = request.user.twitter_api.get_request_token()
+    else:
+        request_token = request.user.twitter_api.get_request_token(callback="oob")
+    request.session[SESSION_LOGIN_REDIRECT_KEY] = redirect_to
+    request.session[SESSION_TOKEN_KEY] = request_token.to_string()
     authorization_url = request.user.twitter_api.get_authorization_url(request_token)
-    #print 'Authorization url', authorization_url
-    return HttpResponseRedirect(authorization_url)
+    
+    if not settings.DEBUG:
+        return HttpResponseRedirect(authorization_url)
+    else:
+        form = PinCodeForm()
+        return render_to_response('pincode.html', 
+                                  {'auth_url': authorization_url, 'form': form}, 
+                                  context_instance=RequestContext(request))
 
 
 def callback(request):
@@ -49,12 +61,22 @@ def callback(request):
             'token': True
         })
     request_token = oauth.OAuthToken.from_string(request_token)
-    if request_token.key != request.GET.get('oauth_token', 'no-token'):
+    if request_token.key != request.GET.get('oauth_token', 'no-token') and not settings.DEBUG:
         return render_to_response('callback.html', {
             'mismatch': True
         })
-    request.user.twitter_api.token = request.user.twitter_api.get_access_token(request_token)
-
+    
+    if not settings.DEBUG:
+        request.user.twitter_api.token = request.user.twitter_api.get_access_token(request_token)
+    else:
+        form = PinCodeForm(request.POST)
+        if form.is_valid(): 
+            pin_code = "%s" % form.cleaned_data['pin_code']
+            request.user.twitter_api.token = request.user.twitter_api.get_access_token(request_token, verifier=pin_code)
+        else:
+            return HttpResponseRedirect(reverse('auth_login'))
+    
+    
     # Actually login
     credentials = request.user.twitter_api.verify_credentials()
     if credentials is None:

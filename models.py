@@ -2,7 +2,7 @@
 
 import urllib
 import datetime
-from oauth import oauth
+import oauth
 from django.db import models
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
@@ -82,6 +82,21 @@ class User(models.Model):
             self.twitter_api.friends(self.username)
         )
         
+    def friends_ids(self):
+        return simplejson.loads(
+            self.twitter_api.friends_ids(self.username)
+        )
+        
+    def friends_lookup(self, friends_ids):
+        return simplejson.loads(
+            self.twitter_api.friends_lookup(friends_ids)
+        )
+        
+    def unfollow(self, user_id):
+        return simplejson.loads(
+            self.twitter_api.unfollow(user_id)
+        )
+        
     def get_user(self, id_or_screen_name):
         return simplejson.loads(
             self.twitter_api.get_user(id_or_screen_name)
@@ -129,6 +144,8 @@ class AnonymousUser(object):
 
     def tweet(self, status):
         raise NotImplemented
+    
+    def get_and_delete_messages(self): pass
 
     def is_anonymous(self):
         return True
