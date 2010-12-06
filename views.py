@@ -34,9 +34,7 @@ def login(request, redirect_field_name=REDIRECT_FIELD_NAME):
     redirect_to = request.REQUEST.get(redirect_field_name, '')
     if not redirect_to or '//' in redirect_to or ' ' in redirect_to:
         redirect_to = settings.LOGIN_REDIRECT_URL
-    
     request.session.set_test_cookie()
-    
     if not settings.DEBUG:
         request_token = request.user.twitter_api.get_request_token()
     else:
@@ -65,7 +63,6 @@ def callback(request):
         return render_to_response('callback.html', {
             'mismatch': True
         })
-    
     if not settings.DEBUG:
         request.user.twitter_api.token = request.user.twitter_api.get_access_token(request_token)
     else:

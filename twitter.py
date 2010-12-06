@@ -6,7 +6,7 @@ import urllib
 import exceptions
 from django.conf import settings
 
-import simplejson as json
+from django.utils import simplejson as json 
 
 if not hasattr(settings, 'TWITTERAUTH_KEY') and \
        hasattr(settings, 'TWITTERAUTH_SECRET'):
@@ -27,6 +27,7 @@ TWITTER_USER_TIMELINE = "https://api.twitter.com/1/statuses/user_timeline.json"
 TWITTER_UPDATE_STATUS = 'https://api.twitter.com/statuses/update.json'
 TWITTER_RETWEET_STATUS = 'https://api.twitter.com/1/statuses/retweet/%s.json'
 TWITTER_UNFOLLOW = "https://api.twitter.com/1/friendships/destroy.json"
+TWITTER_FOLLOW = "https://api.twitter.com/1/friendships/create.json"
 # User Methods
 TWITTER_FRIENDS = 'https://api.twitter.com/statuses/friends.json'
 TWITTER_FOLLOWERS = 'https://api.twitter.com/statuses/followers.json'
@@ -79,7 +80,7 @@ class TwitterAPI(object):
             token = self.token
         if parameters is None:
             parameters = {}
-            
+        
         request = oauth.OAuthRequest.from_consumer_and_token(self.consumer, token=token, 
                      http_url=url, parameters=parameters, http_method=method)
         request.sign_request(self.signature_method, self.consumer, token)
@@ -139,7 +140,10 @@ class TwitterAPI(object):
         return self.make_request(
             TWITTER_FRIENDS_IDS,
             parameters=dict(screen_name=screen_name)
-        )
+        )    
+        
+    def friends_ids_no_screen_name(self):
+        return self.make_request(TWITTER_FRIENDS_IDS)  
     
     def friends_lookup(self, friends):
         return self.make_request(
@@ -150,6 +154,13 @@ class TwitterAPI(object):
     def unfollow(self, id):
         return self.make_request(
             TWITTER_UNFOLLOW,
+            method='POST',
+            parameters=dict(user_id=id)
+        )
+    
+    def follow(self, id):
+        return self.make_request(
+            TWITTER_FOLLOW,
             method='POST',
             parameters=dict(user_id=id)
         )

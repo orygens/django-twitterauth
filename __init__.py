@@ -7,7 +7,6 @@ SESSION_KEY = '_twitterauth_user_id'
 BACKEND_SESSION_KEY = '_twitterauth_user_backend'
 REDIRECT_FIELD_NAME = 'next'
 
-
 def login(request, user):
     """
     Persist a user id and backend in the request. This way a user doesn't
