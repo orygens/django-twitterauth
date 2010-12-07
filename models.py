@@ -97,6 +97,11 @@ class User(models.Model):
         return simplejson.loads(
             self.twitter_api.unfollow(user_id)
         )
+
+    def follow(self, user_id):
+        return simple.json.loads(
+            self.twitter_api.follow(user_id)
+        )
         
     def get_user(self, id_or_screen_name):
         return simplejson.loads(
