@@ -120,6 +120,9 @@ class AnonymousUser(object):
     key = ''
     secret = ''
 
+    def __init__(self):
+        self.id = self.__unicode__()
+
     def __unicode__(self):
         return 'AnonymousUser'
 
@@ -167,3 +170,7 @@ class AnonymousUser(object):
     
     def is_staff(self):
         return False
+
+    def has_module_perms(self, package_name):
+        return False
+
